@@ -3,6 +3,8 @@ import { api } from '@/lib/axios'; // (الذي أنشأناه سابقاً)
 import {type LoginFormValues,type RegisterFormValues } from '../types/schema';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from './useUser';
+import type { User } from '@/types';
 
 // تسجيل الدخول
 export const useLogin = () => {
@@ -62,6 +64,57 @@ export const useRegister = () => {
     },
     onError: () => {
       toast.error("حدث خطأ أثناء إنشاء الحساب");
+    },
+  });
+};
+
+
+export const useUpdateUser = () => {
+  // Assuming useProducts uses the storeId to fetch the list
+   const { refetch } = useUser(); 
+       const navigate = useNavigate();
+
+ 
+   return useMutation({
+     // FIX: Accept ONE object with properties { id, data }
+     mutationFn: async ({ data }: {  data: User }) => {    
+        const res = await api.put(`/me`, data);
+        return res.data;
+     },
+     onSuccess: () => {
+        toast.success("Store updated successfully!");
+        refetch(); 
+        navigate(-1)
+     },
+     onError: (error: any) => {
+        const msg = error?.response?.data?.message || "Something went wrong";
+        toast.error(msg);
+     },
+   });
+ };
+
+
+ interface PasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+ export const useUpdatePassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: async (payload: PasswordPayload) => {
+       const res = await api.post(`/me/password`, payload);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Password updated successfully");
+      navigate(-1);
+    },
+    onError: (error: any) => {
+      const msg = error?.response?.data?.message || "Failed to update password";
+      toast.error(msg);
     },
   });
 };

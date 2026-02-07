@@ -5,8 +5,7 @@ import { Loader2 } from "lucide-react";
 const ProtectedRoutes = () => {
   const { data: user, isLoading, isError } = useUser();
   const location = useLocation();
-console.log("hello");
-
+ 
   // 1. حالة التحميل: لا نظهر شياً، فقط لودر
   if (isLoading) {
     return (

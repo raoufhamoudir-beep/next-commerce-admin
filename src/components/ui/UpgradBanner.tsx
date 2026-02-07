@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom'
 import { motion } from "framer-motion";
 
 const UpgradBanner = ({ toggleHeader, isPaid, orders }: any) => {
-    const { t } = useTranslation("constanst");
+  const { t } = useTranslation("account"); // 2. Initialize translation
     const maxOrders = 30;
     const percentageUsed = (orders / maxOrders) * 100;
 

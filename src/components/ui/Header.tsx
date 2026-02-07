@@ -10,12 +10,13 @@ export default function Header({
   toggleSidebar, 
   openLanguagePanel, 
   openAccountPanel, 
-  isPaid 
+  isPaid ,
+    storeid 
 }: HeaderProps) {
   
-  const { i18n } = useTranslation("constants"); // Fixed typo
+  const {  i18n } = useTranslation("account"); // 2. Initialize translation
   const currentLang = i18n.language; 
-
+  
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
@@ -25,15 +26,17 @@ export default function Header({
     >
       <div className='flex items-center gap-1'>
         {/* Mobile Menu Button */}
-        <button
+       {storeid && <button
           onClick={toggleSidebar}
           className="flex md:hidden items-center justify-center p-2 rounded-lg cursor-pointer transition-all hover:bg-gray-100 text-gray-700"
         >
           <Menu className="w-6 h-6" />
-        </button>
+        </button>}
 
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2">
+        <Link
+        to={'/'}
+        className="flex items-center gap-2">
           <div className="h-16 w-16 rounded-xl flex items-center justify-center">
             <img
               src="/logo.png" 

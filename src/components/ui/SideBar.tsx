@@ -1,20 +1,19 @@
 import {
   Home, Store, Box, Tag, Layers, Truck, Megaphone,
-   Eye
+   Eye,
+   FishingHook
 } from 'lucide-react';
-import { FaFacebook, FaTiktok } from "react-icons/fa";
-import {  useLocation } from 'react-router-dom';
+ import {  Link, useLocation } from 'react-router-dom';
 import { motion } from "framer-motion";
 import { useState, useEffect} from 'react';
 import { HiBars3BottomLeft } from "react-icons/hi2";
 import { useTranslation } from 'react-i18next';
-import { FaSheetPlastic } from "react-icons/fa6";
-import { IoIosMore } from "react-icons/io";
 import UpgradeBanner from './UpgradBanner'; // Fixed typo
 import Dropdown from './Dropdown';
 import NavItem from './NavItem';
 import SectionLabel from './SectionLabel';
 import type { SidebarProps } from '@/types';
+import { useStore } from '@/features/store/hooks/UseStore';
 
 // 1. Define Props Interface
 
@@ -22,14 +21,14 @@ export default function Sidebar({
   isCollapsed,
   toggleSidebar,
   name,
-  link,
   isPaid,
-  orders,
+  ordersCount, 
+  storeid
 }: SidebarProps) {
-  const { i18n, t } = useTranslation("constants"); // Fixed typo
+  const { t, i18n } = useTranslation("account"); // 2. Initialize translation
   const currentLang = i18n.language;
   const location = useLocation();
-
+const {data} = useStore(storeid)
   const [expandedMenus, setExpandedMenus] = useState({
     store: false,
     orders: false,
@@ -46,7 +45,7 @@ export default function Sidebar({
     setExpandedMenus((s) => ({
       ...s,
       orders: path.includes('/orders'),
-      products: path.includes('/items') || path.includes('/additems'),
+      products: path.includes('/products') || path.includes('/additems'),
     }));
   }, [location.pathname]);
 
@@ -75,7 +74,7 @@ export default function Sidebar({
             animate={{ opacity: 1 }}
             className="font-black text-2xl bg-gradient-to-r from-teal-500 to-purple-600 bg-clip-text text-transparent truncate"
           >
-            {name || "NextStore"}
+            {data?.storeName}
           </motion.h1>
         )}
 
@@ -90,7 +89,7 @@ export default function Sidebar({
       {/* --- Visit Website Button --- */}
       <div className={`mb-4 shrink-0 transition-all ${isCollapsed ? 'px-2 flex justify-center' : 'px-4'}`}>
         <a
-          href={`https://${link}.next-commerce.shop`}
+          href={`https://${data?.domain}.next-commerce.shop`}
           target="_blank"
           rel="noreferrer"
           className={`
@@ -115,7 +114,7 @@ export default function Sidebar({
           onClick={toggleSidebar}
           icon={<Home className="w-5 h-5" />}
           label={t("Home")}
-          to="/"
+          to={`/store/${storeid}`}
           isCollapsed={isCollapsed}
         />
 
@@ -129,11 +128,11 @@ export default function Sidebar({
           isCollapsed={isCollapsed}
           isActive={location.pathname.includes('/update')}
         >
-          <NavItem onClick={toggleSidebar} isSubItem label={t("Logo")} to="/update/logo" />
-          <NavItem onClick={toggleSidebar} isSubItem label={t("Theme")} to="/update/theme" />
-          <NavItem onClick={toggleSidebar} isSubItem label={t("Contactinformation")} to="/update/Contact-information" />
-          <NavItem onClick={toggleSidebar} isSubItem label={t("Faqspage")} to="/update/faqs" />
-          <NavItem onClick={toggleSidebar} isSubItem label={t("Storesettings")} to="/update/settings" />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("Logo")} to={`/store/${storeid}/update/logo`}  />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("Theme")} to={`/store/${storeid}/update/theme`}   />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("Contactinformation")} to={`/store/${storeid}/update/Contact-information`}  />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("Faqspage")} to={`/store/${storeid}/update/faqs`}   />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("Storesettings")} to={`/store/${storeid}/update/setting`} />
         </Dropdown>
 
         <Dropdown
@@ -144,7 +143,7 @@ export default function Sidebar({
           isCollapsed={isCollapsed}
           isActive={location.pathname.includes('/orders')}
         >
-          <NavItem onClick={toggleSidebar} isSubItem label={t("AllOrders")} to="/orders" />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("AllOrders")} to={`/store/${storeid}/orders`} />
         </Dropdown>
 
         <Dropdown
@@ -153,47 +152,44 @@ export default function Sidebar({
           isOpen={expandedMenus.products}
           toggle={() => handleToggleMenu('products')}
           isCollapsed={isCollapsed}
-          isActive={location.pathname.includes('/items')}
+          isActive={location.pathname.includes('/products')}
         >
-          <NavItem onClick={toggleSidebar} isSubItem label={t("Products")} to="/items" />
-          <NavItem onClick={toggleSidebar} isSubItem label={t("AddProducts")} to="/additems" isHot />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("Products")} to={`/store/${storeid}/products`} />
+          <NavItem onClick={toggleSidebar} isSubItem label={t("AddProducts")}  to={`/store/${storeid}/Add-Product`}   />
         </Dropdown>
 
         {/* ... Repeated pattern for other dropdowns (Categories, Delivery, etc.) ... */}
          <Dropdown label={t("Categories")} icon={<Layers className="w-5 h-5" />} isOpen={expandedMenus.categories} toggle={() => handleToggleMenu('categories')} isCollapsed={isCollapsed} isActive={location.pathname.includes('/Categories')}>
-            <NavItem onClick={toggleSidebar} isSubItem label={t("Categories")} to="/Categories" />
-            <NavItem onClick={toggleSidebar} isSubItem label={t("AddCategories")} to="/AddCategories" />
+            <NavItem onClick={toggleSidebar} isSubItem label={t("Categories")} to={`/store/${storeid}/Categories`}  />
+            <NavItem onClick={toggleSidebar} isSubItem label={t("AddCategories")} to={`/store/${storeid}/add-categories`}  />
         </Dropdown>
 
         <Dropdown label={t("Delivery")} icon={<Truck className="w-5 h-5" />} isOpen={expandedMenus.delivery} toggle={() => handleToggleMenu('delivery')} isCollapsed={isCollapsed} isActive={location.pathname.includes('/Liv')}>
-            <NavItem onClick={toggleSidebar} isSubItem label={t("DeliveryCompanies")} to="/LivCompany" />
-            <NavItem onClick={toggleSidebar} isSubItem label={t("DeliveryPrices")} to="/LivrisionPrice" />
+            <NavItem onClick={toggleSidebar} isSubItem label={t("DeliveryCompanies")} to={`/store/${storeid}/delivery-companies`}  />
+            <NavItem onClick={toggleSidebar} isSubItem label={t("DeliveryPrices")} to={`/store/${storeid}/delivery-prices`}   />
         </Dropdown>
-
+ 
         <SectionLabel label={t("Growth")} isCollapsed={isCollapsed} />
 
         <Dropdown label={t("marketingTools")} icon={<Megaphone className="w-5 h-5" />} isOpen={expandedMenus.marketing} toggle={() => handleToggleMenu('marketing')} isCollapsed={isCollapsed} isActive={location.pathname.includes('Pixel')}>
-            <NavItem onClick={toggleSidebar} isSubItem icon={<FaFacebook className="w-4 h-4 text-blue-600" />} label={t("facebookPixels")} to="/AddFacebookPixel" />
-            <NavItem onClick={toggleSidebar} isSubItem icon={<FaTiktok className="w-4 h-4 text-black" />} label={t("TiktokPixels")} to="/AddTiktokPixel" />
-        </Dropdown>
-
-        <Dropdown label={t("others")} icon={<IoIosMore className="w-5 h-5" />} isOpen={expandedMenus.more} toggle={() => handleToggleMenu('more')} isCollapsed={isCollapsed}>
-            <NavItem onClick={toggleSidebar} isSubItem icon={<FaSheetPlastic className="w-4 h-4 text-green-600" />} label={t("googlesheet")} to="/sheet" />
-        </Dropdown>
+            <NavItem onClick={toggleSidebar} isSubItem icon={ <FishingHook   className="w-4 h-4  " />} label={t("Pixels")}  to={`/store/${storeid}/pixals`} />
+         </Dropdown>
       </nav>
 
       {/* Upgrade Banner */}
       {!isCollapsed && (
         <UpgradeBanner
           isPaid={isPaid}
-          orders={orders}
+          orders={ordersCount}
           toggleSidebar={toggleSidebar}
         />
       )}
 
       {/* --- User/Profile Footer --- */}
       {!isCollapsed && (
-        <div className="p-4 border-t border-gray-100 bg-gray-50/80 shrink-0">
+        <Link
+        to={'/'}
+        className="p-4 border-t border-gray-100 bg-gray-50/80 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-teal-400 to-purple-500 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-white">
               {name ? name.charAt(0).toUpperCase() : "A"}
@@ -203,7 +199,7 @@ export default function Sidebar({
               <p className="text-xs text-gray-500 truncate">{t("StoreOwner")}</p>
             </div>
           </div>
-        </div>
+        </Link>
       )}
     </motion.aside>
   );

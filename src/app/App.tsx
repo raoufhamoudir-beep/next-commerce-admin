@@ -7,9 +7,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <div className="min-h-screen bg-gray-50 text-gray-900">
-           <AppRoutes />
-        </div>
+            <AppRoutes />
+        
       </BrowserRouter>
     </QueryClientProvider>
   )

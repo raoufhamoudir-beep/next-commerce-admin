@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 
 const LanguagePanel = ({ hide }: LanguagePanelProps) => {
-  const { i18n, t } = useTranslation("constants"); // Fixed typo
+  const { t, i18n } = useTranslation("account"); // 2. Initialize translation
   const currentLang = i18n.language;
 
   const languages: LanguageOption[] = [
