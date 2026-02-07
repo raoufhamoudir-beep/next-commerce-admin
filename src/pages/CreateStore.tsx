@@ -1,52 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { ArrowLeft, Store, Globe, Loader2, CheckCircle2, Upload, Palette, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Store, Globe, Loader2, CheckCircle2, Palette, X } from 'lucide-react';
+import PageContainer from '@/components/ui/PageContainer';
+import { formSchema, type FormValues } from '@/features/admin/types/schema';
+import { useStoreRegister } from '@/features/admin/hook/useStoreManagement';
+import {Toaster } from "react-hot-toast";
+import { useTranslation } from 'react-i18next';
 
-// --- 1. Updated Zod Schema ---
-// We allow logo to be any (File) for the form, but in a real app you'd upload it to S3/Cloudinary first.
-const formSchema = z.object({
-  name: z.string().min(3, { message: "Store name must be at least 3 characters" }),
-  subdomain: z
-    .string()
-    .min(3, { message: "Domain must be at least 3 characters" })
-    .regex(/^[a-z0-9-]+$/, { message: "Only lowercase letters, numbers, and hyphens allowed" }),
-  color: z.string().min(4, { message: "Please select a brand color" }),
-  logo: z.any().optional(), 
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
-// Preset colors for the user to choose quickly
 const BRAND_COLORS = [
-  { name: 'Purple', value: '#9333ea' }, // Your preference
-  { name: 'Teal', value: '#0d9488' },   // Your preference
-  { name: 'Blue', value: '#2563eb' },
-  { name: 'Black', value: '#0f172a' },
-  { name: 'Orange', value: '#ea580c' },
+  { name: 'Purple', value: '#9333ea', ring: 'ring-purple-500' }, 
+  { name: 'Teal', value: '#0d9488', ring: 'ring-teal-500' }, 
+  { name: 'Blue', value: '#2563eb', ring: 'ring-blue-500' },
+  { name: 'Black', value: '#0f172a', ring: 'ring-gray-800' },
+  { name: 'Orange', value: '#ea580c', ring: 'ring-orange-500' },
 ];
 
 const CreateStore = () => {
-  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isSubdomainTouched, setIsSubdomainTouched] = useState(false);
+   const { t } = useTranslation("account");
+
+  // --- FIX 1: Call the Hook at the Top Level ---
+  const { mutate: registerStore, isPending } = useStoreRegister();
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      color: '#9333ea', // Default to Purple
+      color: '#9333ea', 
     },
     mode: 'onChange',
   });
 
-  const watchedName = watch("name");
+  const watchedName = watch("storeName");
   const watchedColor = watch("color");
 
   // --- Auto-Slug Logic ---
@@ -57,210 +48,155 @@ const CreateStore = () => {
         .replace(/[^a-z0-9\s-]/g, '')
         .trim()
         .replace(/\s+/g, '-');
-      setValue("subdomain", slug, { shouldValidate: true });
+      setValue("domain", slug, { shouldValidate: true });
     }
   }, [watchedName, isSubdomainTouched, setValue]);
 
   // --- Logo Handling ---
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Create a fake URL for preview
-      const previewUrl = URL.createObjectURL(file);
-      setLogoPreview(previewUrl);
-      setValue("logo", file);
-    }
-  };
+ 
+  // --- FIX 2: Use the mutate function inside onSubmit ---
+  const onSubmit =  (data: FormValues) => {
+ registerStore(data);
 
-  const removeLogo = () => {
-    setLogoPreview(null);
-    setValue("logo", null);
-  };
-
-  const onSubmit = async (data: FormValues) => {
-    console.log("Submitting:", data);
-    // TODO: 
-    // 1. Upload `data.logo` to storage (AWS S3/Uploadthing) -> get URL
-    // 2. Send `name`, `subdomain`, `color`, and `logoUrl` to backend
-    await new Promise((resolve) => setTimeout(resolve, 2000));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      
-      <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-        <Link to="/admin" className="inline-flex items-center text-sm text-gray-500 hover:text-purple-600 transition-colors mb-6">
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Back to Dashboard
-        </Link>
-        <h2 className="text-center text-3xl font-extrabold text-gray-900">
-          Create your store
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Customize your brand identity.
-        </p>
-      </div>
-
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl shadow-purple-900/5 sm:rounded-2xl sm:px-10 border border-gray-100">
+    <PageContainer
+      title={t("Create your store")} // Fixed typo: titel -> title
+      back={true} // Ensure boolean is passed correctly if needed
+      about={t("Create a new store with a new domain and controllers")}
+    >
+     <Toaster  />
+      <div className="flex justify-center w-full">
+        <div className="w-full max-w-2xl bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-sm border border-white/50 ring-1 ring-gray-100">
           
           <form className="space-y-8" onSubmit={handleSubmit(onSubmit)}>
             
             {/* --- 1. Store Details Section --- */}
-            <div className="space-y-5">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Store Details</h3>
+            <div className="space-y-6">
+              <div className="flex items-center space-x-2">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent to-purple-200"></div>
+                <h3 className="text-xs font-bold text-purple-900/50 uppercase tracking-widest">{t("Store Details")}</h3>
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent to-purple-200"></div>
+              </div>
               
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
-                <div className="relative rounded-md shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Store className="h-5 w-5 text-gray-400" />
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t("Store Name")}</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                    <Store className="h-5 w-5 text-gray-400 group-focus-within:text-purple-500 transition-colors" />
                   </div>
                   <input
-                    {...register("name")}
+                    {...register("storeName")}
                     type="text"
-                    className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
-                    placeholder="e.g. My Awesome Shop"
+                    className="block w-full pl-11 pr-3 py-3 border-gray-200 bg-gray-50/50 rounded-xl focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 focus:bg-white transition-all duration-200 sm:text-sm placeholder:text-gray-400"
+                    placeholder={t("e.g. My Awesome Shop")}
                   />
                 </div>
-                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>}
+                {errors.storeName && <p className="mt-1.5 text-sm text-red-500 flex items-center"><X className="w-3 h-3 mr-1"/> {errors.storeName.message}</p>}
               </div>
 
               {/* Subdomain */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Store Domain</label>
-                <div className="flex rounded-md shadow-sm">
-                  <div className="relative flex-grow focus-within:z-10">
-                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <label className="block text-sm font-medium text-gray-700 mb-1.5">{t("Store Domain")}</label>
+                <div className="flex rounded-xl shadow-sm ring-1 ring-gray-200 focus-within:ring-2 focus-within:ring-teal-500 focus-within:ring-offset-1 transition-all overflow-hidden">
+                  <div className="relative flex-grow flex items-center bg-gray-50/50 focus-within:bg-white transition-colors">
+                     <div className="pl-3.5 pr-2">
                         <Globe className="h-5 w-5 text-gray-400" />
                      </div>
                     <input
-                      {...register("subdomain")}
+                      {...register("domain")}
                       onInput={() => setIsSubdomainTouched(true)}
                       type="text"
-                      className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-l-lg focus:ring-purple-500 focus:border-purple-500 sm:text-sm"
+                      className="block w-full py-3 border-0 bg-transparent focus:ring-0 sm:text-sm placeholder:text-gray-400 text-gray-900"
+                      placeholder={t("myshop")}
                     />
                   </div>
-                  <span className="inline-flex items-center px-3 rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
-                    .nextcommerce.com
-                  </span>
+                  <div className="flex items-center px-4 bg-gray-50 border-l border-gray-200 text-gray-500 sm:text-sm font-medium">
+                    <span className="text-teal-600/70">.next-commerce.shop</span>
+                  </div>
                 </div>
+                {errors.domain && <p className="mt-1.5 text-sm text-red-500 flex items-center"><X className="w-3 h-3 mr-1"/> {errors.domain.message}</p>}
               </div>
             </div>
 
-            <hr className="border-gray-100" />
-
             {/* --- 2. Branding Section --- */}
-            <div className="space-y-5">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Branding</h3>
-
-              {/* Logo Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Store Logo</label>
-                
-                {!logoPreview ? (
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:bg-gray-50 hover:border-purple-400 transition-all cursor-pointer relative">
-                    <input 
-                      type="file" 
-                      accept="image/*"
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      onChange={handleLogoChange}
-                    />
-                    <div className="space-y-1 text-center">
-                      <div className="mx-auto h-12 w-12 text-gray-400">
-                        <Upload className="w-10 h-10 mx-auto" />
-                      </div>
-                      <div className="flex text-sm text-gray-600 justify-center">
-                        <span className="relative cursor-pointer bg-white rounded-md font-medium text-purple-600 hover:text-purple-500">
-                          Upload a file
-                        </span>
-                        <p className="pl-1">or drag and drop</p>
-                      </div>
-                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative w-fit mt-2">
-                    <img 
-                      src={logoPreview} 
-                      alt="Logo preview" 
-                      className="h-24 w-24 object-cover rounded-xl border border-gray-200 shadow-sm"
-                    />
-                    <button 
-                      type="button"
-                      onClick={removeLogo}
-                      className="absolute -top-2 -right-2 bg-red-100 text-red-600 rounded-full p-1 hover:bg-red-200 transition-colors"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
+            <div className="space-y-6">
+              <div className="flex items-center space-x-2">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent to-teal-200"></div>
+                <h3 className="text-xs font-bold text-teal-900/50 uppercase tracking-widest">{t("Identity")}</h3>
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent to-teal-200"></div>
               </div>
+
+          
 
               {/* Brand Color */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">Primary Color</label>
-                <div className="flex flex-wrap gap-3 items-center">
+                <label className="block text-sm font-medium text-gray-700 mb-3">{t("Primary Color")}</label>
+                <div className="flex flex-wrap gap-4 items-center">
                   {BRAND_COLORS.map((c) => (
                     <button
                       key={c.value}
                       type="button"
                       onClick={() => setValue('color', c.value)}
-                      className={`w-10 h-10 rounded-full border-2 focus:outline-none transition-all ${
+                      className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-300 ${
                         watchedColor === c.value 
-                          ? 'border-gray-900 scale-110 shadow-md' 
-                          : 'border-transparent hover:scale-105'
+                          ? `ring-2 ${c.ring} ring-offset-2 scale-110 shadow-md` 
+                          : 'ring-1 ring-black/5 hover:scale-105 hover:shadow-sm'
                       }`}
                       style={{ backgroundColor: c.value }}
                       title={c.name}
                     >
                       {watchedColor === c.value && (
-                        <CheckCircle2 className="w-5 h-5 text-white mx-auto" />
+                        <CheckCircle2 className="w-6 h-6 text-white drop-shadow-md animate-in zoom-in duration-200" />
                       )}
                     </button>
                   ))}
                   
-                  {/* Custom Color Input Wrapper */}
-                  <div className="relative">
-                     <div className="w-10 h-10 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center cursor-pointer overflow-hidden">
-                       <Palette className="w-5 h-5 text-gray-400" />
-                       <input 
+                  {/* Custom Color Input */}
+                  <div className={`relative w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center cursor-pointer transition-all hover:border-purple-300 ${!BRAND_COLORS.find(c => c.value === watchedColor) ? 'ring-2 ring-purple-500 ring-offset-2' : ''}`}>
+                      <Palette className="w-5 h-5 text-gray-400" />
+                      <input 
                         type="color"
                         {...register("color")}
-                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                       />
-                     </div>
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full rounded-full"
+                      />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Selected: <span className="font-mono uppercase">{watchedColor}</span>
-                </p>
+                <div className="flex items-center mt-3">
+                  <div className="h-4 w-4 rounded-full border border-gray-100 shadow-sm mr-2" style={{ backgroundColor: watchedColor }}></div>
+                  <p className="text-xs text-gray-500 font-mono">
+                    {watchedColor}
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* --- Submit --- */}
-            <div className="pt-4">
+            <div className="pt-2">
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-gray-900 hover:bg-gradient-to-r hover:from-purple-600 hover:to-teal-500 shadow-lg hover:shadow-purple-500/25 transition-all duration-300 disabled:opacity-50"
+                disabled={isPending}
+                className="w-full relative group overflow-hidden rounded-xl p-[1px] focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? (
-                   <>
-                     <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                     Creating Store...
-                   </>
-                ) : (
-                   "Create Store"
-                )}
+                <span className="absolute inset-0 bg-gradient-to-r from-purple-600 to-teal-500 group-hover:from-purple-700 group-hover:to-teal-600 transition-all duration-300"></span>
+                <div className="relative bg-gradient-to-r from-purple-600 to-teal-500 h-full rounded-xl px-4 py-3.5 flex items-center justify-center transition-all">
+                  {isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin text-white/90" />
+                      <span className="text-white font-medium">{t("Creating Store...")}</span>
+                    </>
+                  ) : (
+                    <span className="text-white font-semibold text-base tracking-wide">{t("Create Store")}</span>
+                  )}
+                </div>
               </button>
             </div>
           </form>
-
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
