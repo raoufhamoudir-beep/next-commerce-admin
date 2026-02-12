@@ -10,6 +10,7 @@ import BoxCard from '@/components/ui/BoxCard';
 // Hooks
 import { useUpdateStore } from '@/features/admin/hook/useStoreManagement';
 import { useStore } from '@/features/store/hooks/UseStore';
+import SaveModal from '@/components/ui/SaveModal';
 
 interface StoreSettingsState {
     storeName: string;
@@ -178,25 +179,11 @@ const UpdateSettings = () => {
                 </div>
 
                 {/* Action Button */}
-                <div className="pt-2 flex justify-end">
-                    <button
-                        onClick={handleSave}
-                        disabled={isPending || !hasChanges}
-                        className={`
-                            w-full md:w-auto px-6 py-2 rounded-xl text-white font-medium transition-all
-                            ${isPending || !hasChanges
-                                ? "bg-gray-400 cursor-not-allowed opacity-70" 
-                                : "bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/20"
-                            }
-                        `}
-                    >
-                        {isPending ? (
-                            <Loader2 className="animate-spin h-5 w-5 mx-auto" />
-                        ) : (
-                            t("Save")
-                        )}
-                    </button>
-                </div>
+                <SaveModal
+     isDirty={hasChanges}
+     handleSave={handleSave}
+     isSaving={isPending}
+     />
 
             </div>
         </BoxCard>

@@ -58,8 +58,10 @@ const { t, i18n } = useTranslation("account");
   };
 
 return (
-    <PageContainer back={true} title={t("Modify")} about={t("passwordSecurity")}>
-      <BoxCard className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
+    <PageContainer title={t("Modify")} about={t("passwordSecurity")}>
+      <BoxCard
+      about=''
+      className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
         
         {/* Current Password */}
         <div className="space-y-1.5">

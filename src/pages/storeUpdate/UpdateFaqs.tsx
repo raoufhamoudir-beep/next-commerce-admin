@@ -10,6 +10,7 @@ import { useStore } from '@/features/store/hooks/UseStore';
 import { useUpdateStore } from '@/features/admin/hook/useStoreManagement';
 import FaqList from '@/features/StoreUpdate/components/FaqList';
 import FaqFormModal from '@/features/StoreUpdate/components/FaqFormModal';
+import SaveModal from '@/components/ui/SaveModal';
  
 // Sub-Components (Defined below for easy copy-paste, but normally in separate files)
  
@@ -98,7 +99,7 @@ const UpdateFaqs = () => {
   return (
     <>
       <BoxCard about={t("FrequentlyAsked")} small={true} className="py-1">
-        <div className="space-y-4">
+        <div className="space-y-4 min-h-[60vh]">
           <button
             onClick={() => { setEditingItem(null); setIsFormOpen(true); }}
             className="flex items-center gap-2 bg-teal-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-teal-700 transition-all shadow-md shadow-teal-600/20"
@@ -116,17 +117,11 @@ const UpdateFaqs = () => {
             />
           </div>
 
-          <div className="pt-2 flex justify-end">
-            <button
-              onClick={handleServerSave}
-              disabled={isPending || !hasChanges}
-              className={`w-full md:w-auto px-6 py-2 rounded-xl text-white font-medium transition-all ${
-                isPending || !hasChanges ? "bg-gray-400 cursor-not-allowed opacity-70" : "bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/20"
-              }`}
-            >
-              {isPending ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : t("Save")}
-            </button>
-          </div>
+         <SaveModal
+     isDirty={hasChanges}
+     handleSave={handleServerSave}
+     isSaving={isPending}
+     />
         </div>
       </BoxCard>
 

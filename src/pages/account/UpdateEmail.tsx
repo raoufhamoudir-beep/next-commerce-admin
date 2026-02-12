@@ -33,11 +33,12 @@ const UpdateEmail = () => {
 
   return (
     <PageContainer
-      back={true}
       title={t("modify_title")}
       about={t("email_attribute")}
     >
-      <BoxCard className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
+      <BoxCard
+      about=''
+      className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
         
         {/* Current Email Field */}
         <div className="space-y-1.5">

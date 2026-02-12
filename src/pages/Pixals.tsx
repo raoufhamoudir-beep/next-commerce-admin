@@ -5,7 +5,7 @@ import Tutorial from "@/components/ui/Tutorial";
 import { useUpdateStore } from "@/features/admin/hook/useStoreManagement";
 import { useStore } from "@/features/store/hooks/UseStore";
 import type { pixel, Store } from "@/types";
-import { Loader2, Trash2, Save, Facebook, Video } from "lucide-react"; 
+import { Loader2, Trash2, Save } from "lucide-react"; 
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
@@ -79,11 +79,8 @@ const Pixels = () => {
 
     return (
         <PageContainer
-            onClick={() => setShowTutorial(true)}
-            learn
             title={t("add")}
             about={t("Pixel")}
-            className="gap-6 relative"
         >
             {showTutorial && (
                 <Modal onClose={() => setShowTutorial(false)}>
@@ -98,12 +95,7 @@ const Pixels = () => {
             {/* Facebook Pixel (Styled Purple) */}
             {store?.facebookPixel?.id && (
                 <BoxCard
-                    about={
-                        <div className="flex items-center gap-2 text-purple-700">
-                            <Facebook className="w-5 h-5" />
-                            <span>{t("Current Facebook Pixel")}</span>
-                        </div>
-                    }
+                    about={ t("Current Facebook Pixel")}
                     className="bg-white rounded-2xl shadow-sm border-l-4 border-purple-600 p-6"
                 >
                     <div className="overflow-x-auto">
@@ -138,12 +130,7 @@ const Pixels = () => {
             {/* TikTok Pixel (Styled Teal) */}
             {store?.tiktokPixel?.id && (
                 <BoxCard
-                    about={
-                        <div className="flex items-center gap-2 text-teal-700">
-                            <Video className="w-5 h-5" />
-                            <span>{t("Current TikTok Pixel")}</span>
-                        </div>
-                    }
+                    about={t("Current TikTok Pixel")}
                     className="bg-white rounded-2xl shadow-sm border-l-4 border-teal-600 p-6"
                 >
                     <div className="overflow-x-auto">
@@ -182,7 +169,6 @@ const Pixels = () => {
             {/* Facebook Input - Purple Focus */}
             <BoxCard 
                 about={t("Add Facebook Pixel")} 
-                icon={<Facebook className="w-5 h-5 text-purple-600"/>}
                 className="bg-white rounded-2xl shadow-sm p-6 space-y-4 border border-purple-100"
             >
                 <div className="grid md:grid-cols-2 gap-4">
@@ -214,7 +200,6 @@ const Pixels = () => {
             {/* TikTok Input - Teal Focus */}
             <BoxCard 
                 about={t("Add TikTok Pixel")} 
-                icon={<Video className="w-5 h-5 text-teal-600"/>}
                 className="bg-white rounded-2xl shadow-sm p-6 space-y-4 border border-teal-100"
             >
                 <div className="grid md:grid-cols-2 gap-4">

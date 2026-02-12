@@ -30,8 +30,10 @@ const { t, i18n } = useTranslation("account");
   };
 
  return (
-    <PageContainer back={true} title={t("Modify")} about={t("phonenumber")}>
-      <BoxCard className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
+    <PageContainer  title={t("Modify")} about={t("phonenumber")}>
+      <BoxCard 
+      about=''
+      className="bg-white rounded-2xl shadow-sm p-6 space-y-6">
         
         <div className="space-y-1.5">
           <label className="block text-sm font-semibold text-gray-700">

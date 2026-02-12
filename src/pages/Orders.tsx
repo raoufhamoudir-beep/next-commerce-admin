@@ -126,11 +126,8 @@ const Orders = () => {
 
     return (
         <PageContainer
-            learn
-            onClick={() => setShowTutorial(true)}
             about={t("Management")}
             title={t("Orders")}
-            className="gap-6 relative"
         >
             {/* PRO BANNER */}
             {!user?.isPaid && <UpgradeYourPlan ordersUsed={user?.ordersCount || 0} />}

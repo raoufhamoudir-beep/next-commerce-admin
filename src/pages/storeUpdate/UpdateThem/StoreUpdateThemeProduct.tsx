@@ -13,6 +13,7 @@ import { useUpdateStore } from "@/features/admin/hook/useStoreManagement";
 import ProductCardTypeA from "@/features/StoreUpdate/components/ProductCard/ProductCardTypeA";
 import ProductCardTypeB from "@/features/StoreUpdate/components/ProductCard/ProductCardTypeB";
 import ProductCardTypeC from "@/features/StoreUpdate/components/ProductCard/ProductCardTypeC";
+import SaveModal from "@/components/ui/SaveModal";
 
 // Types
 type CardType = "A" | "B" | "C";
@@ -180,25 +181,11 @@ const StoreUpdateThemeProduct = () => {
         </div>
 
         {/* Action Button */}
-        <div className="pt-6 flex justify-end border-t border-gray-100">
-          <button
-            onClick={handleSave}
-            disabled={isPending || !hasChanges}
-            className={`
-              w-full md:w-auto px-8 py-3 rounded-2xl text-white font-bold tracking-wide transition-all duration-300
-              ${isPending || !hasChanges
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-70" 
-                : "bg-teal-600 hover:bg-teal-700 shadow-lg shadow-teal-600/30 hover:shadow-teal-600/50 hover:-translate-y-0.5"
-              }
-            `}
-          >
-            {isPending ? (
-              <Loader2 className="animate-spin h-5 w-5 mx-auto" />
-            ) : (
-              t("Save")
-            )}
-          </button>
-        </div>
+         <SaveModal
+     isDirty={hasChanges}
+     handleSave={handleSave}
+     isSaving={isPending}
+     />
 
       </div>
   );

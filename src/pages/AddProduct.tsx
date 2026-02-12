@@ -1,9 +1,8 @@
 import React, { useState, type KeyboardEvent, type ChangeEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { Loader2, Plus, X, Save, ArrowLeft } from "lucide-react";
+import {  Plus, X } from "lucide-react";
 import { IoMdAdd } from "react-icons/io";
 
 // Custom UI Components
@@ -20,6 +19,7 @@ import { useStore } from "@/features/store/hooks/UseStore";
 import { useAddProduct } from "@/features/AddProduct/hooks/useProductManagement";
 import type { Offer, product } from "@/types";
 import { handleImageUploadToImgbb } from "@/utils/uploadImage";
+import SaveModal from "@/components/ui/SaveModal";
 
 // --- Types ---
 
@@ -123,6 +123,11 @@ const AddProduct = () => {
     }
   };
 
+  const isFormValid = 
+  Boolean(formData.name?.trim()) && // Handles empty strings or just spaces
+  ( formData.price > 0) && // Allows price to be 0
+  images.length > 0 ? true : false;
+
   const addOffer = () => {
     if (offers.length >= 15) return toast.error(t("Max 15 Offers allowed."));
     setOffers(prev => [...prev, { id: Date.now(), name: '', Quantity: "", price: "", freedelevry: false, topOffer: false }]);
@@ -183,9 +188,10 @@ const AddProduct = () => {
 
   return (
     <PageContainer 
-    onClick={() => setShowTutorial(true)}
-     learn about={t("products")} 
-     title={t("Add")} className="px-4 pb-20 max-w-7xl mx-auto">
+      about={t("products")} 
+     title={t("Add")}
+
+     >
       {showTutorial && (
         <Modal onClose={() => setShowTutorial(false)}>
           <Tutorial about="https://firebasestorage.googleapis.com/v0/b/tawssilatrest.appspot.com/o/tutorial.mp4" />
@@ -381,14 +387,11 @@ const AddProduct = () => {
         </div>
       </div>
 
-      <motion.div initial={{ y: 100 }} animate={{ y: 0 }} className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-slate-200 z-50 flex justify-between items-center max-w-7xl mx-auto w-full">
-        <button onClick={() => router(-1)} className="flex items-center gap-2 text-slate-600 hover:text-slate-900 font-medium px-4 py-2 rounded-lg hover:bg-slate-100 transition-colors">
-            <ArrowLeft size={18} /> {t("Cancel")}
-        </button>
-        <button onClick={handleSubmit} disabled={isPending} className="flex items-center gap-2 bg-indigo-600 text-white px-8 py-2.5 rounded-xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all disabled:opacity-70 disabled:cursor-not-allowed">
-            {isPending ? <Loader2 className="animate-spin w-5 h-5" /> : <Save size={18} />} <span>{t("save")}</span>
-        </button>
-      </motion.div>
+     <SaveModal
+     isDirty={isFormValid}
+     handleSave={handleSubmit}
+     isSaving={isPending}
+     />
     </PageContainer>
   );
 };

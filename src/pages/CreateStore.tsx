@@ -63,7 +63,6 @@ const CreateStore = () => {
   return (
     <PageContainer
       title={t("Create your store")} // Fixed typo: titel -> title
-      back={true} // Ensure boolean is passed correctly if needed
       about={t("Create a new store with a new domain and controllers")}
     >
      <Toaster  />

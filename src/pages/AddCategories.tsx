@@ -8,7 +8,7 @@ import { useUpdateStore } from '@/features/admin/hook/useStoreManagement';
 import { useStore } from '@/features/store/hooks/UseStore';
 import type { Categories, Store } from '@/types';
 import { handleImageUploadToImgbb } from '@/utils/uploadImage';
-import { Loader2, Save, Type, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Save} from 'lucide-react';
 import { useState, type ChangeEvent } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -105,11 +105,8 @@ const AddCategories = () => {
 
   return (
     <PageContainer
-      onClick={() => setShowTutorial(true)}
-      learn
       title={t('Add Category')}
       about={t("Create a new category for your products")}
-      className="gap-6 relative"
     >
       {showTutorial && (
         <Modal onClose={() => setShowTutorial(false)}>
@@ -123,7 +120,6 @@ const AddCategories = () => {
         <div className="lg:col-span-2 space-y-6">
           <BoxCard
             about={t("General Information")}
-            icon={<Type className="w-5 h-5 text-purple-600" />}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
           >
             <div className="space-y-4">
@@ -162,7 +158,6 @@ const AddCategories = () => {
         <div className="lg:col-span-1 space-y-6">
           <BoxCard
             about={t("Category Image")}
-            icon={<ImageIcon className="w-5 h-5 text-teal-600" />}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
           >
             <p className="text-sm text-gray-500 mb-4">

@@ -2,7 +2,7 @@ import  { useState, useEffect, useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Save, Loader2, Home, Building2, MapPin, X, RotateCcw } from 'lucide-react'
+import { Search,  Loader2, Home, Building2, MapPin, X } from 'lucide-react'
 
 // Hooks & Types
 import { useDeliveryPrice, useUpdateDeliveryPrice } from '@/features/DeliveryPrice/hook/useDeliveryPrice'
@@ -12,6 +12,7 @@ import type { DeliveryPrices, DeliveryPrice as DeliveryPriceType } from '@/types
 import PageContainer from '@/components/ui/PageContainer'
 import Modal from '@/components/ui/Madel'
 import Tutorial from '@/components/ui/Tutorial'
+import SaveModal from '@/components/ui/SaveModal'
 
 const DeliveryPrice = () => {
     const { id } = useParams<{ id: string }>()
@@ -46,12 +47,7 @@ const DeliveryPrice = () => {
         setIsDirty(true)
     }
 
-    const handleDiscard = () => {
-        if (serverData?.States) {
-            setLocalStates(serverData.States) // Reset to server data
-            setIsDirty(false)
-        }
-    }
+   
 
     const handleSave = () => {
         if (!id) return;
@@ -94,8 +90,6 @@ const DeliveryPrice = () => {
 
     return (
         <PageContainer
-            onClick={() => setShowTutorial(true)}
-            learn
             title={t("delivery")}
             about={t("Prices")}
         >
@@ -205,59 +199,11 @@ const DeliveryPrice = () => {
             )}
 
             {/* --- IMPROVED UX: Floating Action Dock --- */}
-            <AnimatePresence>
-                {isDirty && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 100, scale: 0.9 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 100, scale: 0.9 }}
-                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                        className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none"
-                    >
-                        <div className="pointer-events-auto flex items-center gap-4 bg-gray-900/90 backdrop-blur-xl text-white pl-6 pr-2 py-2 rounded-full shadow-2xl shadow-purple-900/20 border border-white/10 ring-1 ring-black/5">
-                            
-                            {/* Text Info */}
-                            <div className="flex items-center gap-3 mr-2">
-                                <span className="relative flex h-3 w-3">
-                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75"></span>
-                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
-                                </span>
-                                <span className="text-sm font-medium tracking-wide">
-                                    {t("Unsaved Changes")}
-                                </span>
-                            </div>
-
-                            {/* Actions Group */}
-                            <div className="flex items-center gap-2 bg-white/10 rounded-full p-1 pl-3">
-                                
-                                {/* Discard Button */}
-                                <button
-                                    onClick={handleDiscard}
-                                    disabled={isSaving}
-                                    className="p-2 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors"
-                                    title={t("Discard Changes")}
-                                >
-                                    <RotateCcw className="w-4 h-4" />
-                                </button>
-
-                                {/* Save Button */}
-                                <button
-                                    onClick={handleSave}
-                                    disabled={isSaving}
-                                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-teal-600 hover:from-teal-400 hover:to-teal-500 text-white rounded-full shadow-lg hover:shadow-teal-500/30 active:scale-95 transition-all duration-200 font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isSaving ? (
-                                        <Loader2 className="animate-spin h-4 w-4" />
-                                    ) : (
-                                        <Save className="h-4 w-4" />
-                                    )}
-                                    <span>{t("Save Changes")}</span>
-                                </button>
-                            </div>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+           <SaveModal
+           isDirty={isDirty}
+           handleSave={handleSave}
+           isSaving={isSaving}
+           />
         </PageContainer>
     )
 }

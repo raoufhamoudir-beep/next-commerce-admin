@@ -14,6 +14,7 @@ import { useUpdateStore } from "@/features/admin/hook/useStoreManagement";
 import { useStore } from "@/features/store/hooks/UseStore";
 import { handleImageUploadToImgbb } from "@/utils/uploadImage";
 import type { Store } from "@/types";
+import SaveModal from "@/components/ui/SaveModal";
 
 const UpdateLogo = () => {
   const { id } = useParams();
@@ -28,6 +29,7 @@ const UpdateLogo = () => {
   // 3. Local State
   const [logo, setLogo] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [HasChanged, setHasChanged] = useState(false);
 
   // 4. Sync local state with fetched data
   useEffect(() => {
@@ -45,6 +47,7 @@ const UpdateLogo = () => {
       const url = await handleImageUploadToImgbb(files[0]);
       if (url) {
         setLogo(url);
+        setHasChanged(true)
         toast.success(t("Image uploaded successfully"));
       }
     } catch (err) {
@@ -127,25 +130,11 @@ const UpdateLogo = () => {
         </div>
 
         {/* Action Button */}
-        <div className="pt-2 flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={isPending || uploading || !logo}
-            className={`
-              w-full md:w-auto px-6 py-2 rounded-xl text-white font-medium transition-all
-              ${isPending || uploading || !logo
-                ? "bg-gray-400 cursor-not-allowed" 
-                : "bg-purple-600 hover:bg-purple-700 shadow-md shadow-purple-600/20"
-              }
-            `}
-          >
-            {isPending ? (
-              <Loader2 className="animate-spin h-5 w-5 mx-auto" />
-            ) : (
-              t("Save")
-            )}
-          </button>
-        </div>
+        <SaveModal
+     isDirty={HasChanged}
+     handleSave={handleSave}
+     isSaving={isPending}
+     />
 
       </div>
     </BoxCard>
