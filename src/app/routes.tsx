@@ -12,6 +12,7 @@ import CreateStore from "@/pages/CreateStore";
 import DeliveryCompanies from "@/pages/DeliveryCompanies";
 import DeliveryPrice from "@/pages/DeliveryPrice";
 import FAQ from "@/pages/FAQ";
+import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import LoginPage from "@/pages/LoginPage";
 import Orders from "@/pages/Orders";
 import Pixals from "@/pages/Pixals";
@@ -43,6 +44,7 @@ export const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       
       {/* Protected Routes */}
       <Route element={<ProtectedRoutes />}>

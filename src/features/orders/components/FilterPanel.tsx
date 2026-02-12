@@ -31,7 +31,6 @@ const FilterPanel = ({
         <BoxCard
             className={className}
             about={t('fillter')}
-            title={t("Filter Orders")}
         >
             {/* Filter Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

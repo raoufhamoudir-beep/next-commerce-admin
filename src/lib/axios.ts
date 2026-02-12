@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // رابط الباك ايند الخاص بك
-const API_URL = import.meta.env.VITE_MAIN_API || "http://localhost:5000/api";
+const API_URL = "http://localhost:5000/api";
  
 export const api = axios.create({
   baseURL: API_URL,

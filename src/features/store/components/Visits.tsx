@@ -1,168 +1,148 @@
-"use client";
+import { motion } from 'framer-motion';
+import BoxCard from '@/components/ui/BoxCard';
+import { useTranslation } from 'react-i18next';
+import { BarChart3, ShoppingBag, Trophy, Award, Medal, ImageOff } from 'lucide-react';
 
-import { useMemo } from "react";
-import { ShoppingBag, Globe, ImageOff } from "lucide-react";
-import BoxCard from "@/components/ui/BoxCard";
-import type { visits } from "@/types";
-import { useTranslation } from "react-i18next";
+interface VisitItem {
+  page: string;
+  count: number;
+  name?: string;
+  image?: string;
+}
 
-// 1. Define the interface correctly
- 
 interface VisitsProps {
-  visit: visits[];
+  visit: VisitItem[];
 }
 
 const Visits = ({ visit = [] }: VisitsProps) => {
-  const { t } = useTranslation("store"); 
+  const { t } = useTranslation("store");
 
-  const {
-    generalPages,
-    productPages,
-    totalGeneral,
-    totalProducts,
-    maxGeneralVal,
-    maxProductVal,
-  } = useMemo(() => {
-    let maxGen = 0;
-    let maxProd = 0;
-    let sumGen = 0;
-    let sumProd = 0;
+  // Separate general pages from products
+  const generalPages = visit.filter(item => !item.image && !item.name);
+  const productPages = visit.filter(item => item.image || item.name);
 
-    // --- 1. General Pages Logic ---
-    const generalMap = visit
-      .filter((v) => v.page !== "productpage")
-      .reduce((acc, v) => {
-        const pageName = v.page || "Unknown";
-        acc[pageName] = (acc[pageName] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+  const totalGeneral = generalPages.reduce((sum, item) => sum + item.count, 0);
+  const totalProducts = productPages.reduce((sum, item) => sum + item.count, 0);
 
-    const sortedGeneral = Object.entries(generalMap)
-      .sort(([, countA], [, countB]) => countB - countA)
-      .map(([page, count]) => {
-        if (count > maxGen) maxGen = count;
-        sumGen += count;
-        return { page, count };
-      });
+  const getShare = (count: number, total: number) => 
+    total > 0 ? Math.round((count / total) * 100) : 0;
 
-    // --- 2. Product Pages Logic ---
-    type ProductData = { count: number; image?: string };
-    
-    const productMap = visit
-      .filter((v) => v.page === "productpage" && v.productName)
-      .reduce((acc, v) => {
-        // v.productName is guaranteed by filter, but TS needs assurance
-        const name = v.productName!; 
-        
-        if (!acc[name]) {
-          acc[name] = { count: 0, image: v.image };
-        }
-        acc[name].count += 1;
-        return acc;
-      }, {} as Record<string, ProductData>);
+  const getPercent = (count: number, max: number) => 
+    max > 0 ? Math.round((count / max) * 100) : 0;
 
-    const sortedProducts = Object.entries(productMap)
-      .sort(([, dataA], [, dataB]) => dataB.count - dataA.count)
-      .map(([name, data]) => {
-        if (data.count > maxProd) maxProd = data.count;
-        sumProd += data.count;
-        return { name, ...data };
-      });
+  const maxProductVal = Math.max(...productPages.map(p => p.count), 1);
 
-    return {
-      generalPages: sortedGeneral,
-      productPages: sortedProducts,
-      totalGeneral: sumGen,
-      totalProducts: sumProd,
-      maxGeneralVal: maxGen,
-      maxProductVal: maxProd,
-    };
-  }, [visit]);
-
-  // Helpers
-  const getPercent = (val: number, max: number) =>
-    max === 0 ? 0 : Math.round((val / max) * 100);
-    
-  const getShare = (val: number, total: number) =>
-    total === 0 ? 0 : Math.round((val / total) * 100);
+  // Medal colors for top 3
+  const getMedalColor = (index: number) => {
+    if (index === 0) return { bg: 'bg-yellow-500', icon: Trophy };
+    if (index === 1) return { bg: 'bg-slate-400', icon: Award };
+    if (index === 2) return { bg: 'bg-orange-500', icon: Medal };
+    return { bg: 'bg-gray-300', icon: null };
+  };
 
   return (
     <BoxCard about={t("TrafficAnalytics")}>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
         {/* ==========================
             LEFT: GENERAL PAGES
            ========================== */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                <Globe className="w-5 h-5" />
+        <div className="space-y-4">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b-2 border-purple-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-purple-200/50">
+                <BarChart3 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-800">{t("General Pages")}</h4>
-                <p className="text-xs text-gray-500">{totalGeneral} {t("total views")}</p>
+                <h4 className="font-bold text-gray-800 text-lg">{t("General Pages")}</h4>
+                <p className="text-xs text-gray-500">
+                  {totalGeneral} {t("total views")}
+                </p>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          {/* Pages List */}
+          <div className="space-y-2">
             {generalPages.length === 0 ? (
-              <p className="text-sm text-gray-400 italic py-4 text-center">
-                {t("No data available")}
-              </p>
+              <div className="py-12 text-center">
+                <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                  <BarChart3 className="w-8 h-8 text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-400 italic">{t("No data available")}</p>
+              </div>
             ) : (
               generalPages.map((item, index) => (
-                <div key={item.page} className="relative group">
-                  {/* Background Bar Chart Effect */}
-                  <div
-                    className="absolute top-0 left-0 h-full bg-blue-50 rounded-lg transition-all duration-700 ease-out"
-                    style={{
-                      width: `${getPercent(item.count, maxGeneralVal)}%`,
-                      opacity: 0.6,
-                    }}
-                  />
-
-                  <div className="relative flex items-center justify-between p-3 rounded-lg z-10 hover:bg-blue-50/50 transition-colors">
+                <motion.div
+                  key={item.page}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  whileHover={{ x: 4 }}
+                  className="group relative"
+                >
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-white to-indigo-50/30 border border-indigo-100/50 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
                     <div className="flex items-center gap-3">
-                      <span
-                        className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full ${
-                          index === 0
-                            ? "bg-blue-500 text-white"
-                            : "bg-white border border-gray-200 text-gray-500"
-                        }`}
+                      {/* Rank Badge */}
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className={`
+                          w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm
+                          ${index < 3 
+                            ? "bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-lg shadow-indigo-200/50" 
+                            : "bg-white border-2 border-gray-200 text-gray-500"}
+                        `}
                       >
                         {index + 1}
-                      </span>
+                      </motion.div>
+                      
+                      {/* Page Name */}
                       <span className="text-sm font-semibold text-gray-700 capitalize">
                         {item.page}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-gray-800">
-                        {item.count}
-                      </span>
-                      <span className="text-xs text-gray-500 w-8 text-right">
-                        ({getShare(item.count, totalGeneral)}%)
-                      </span>
+
+                    {/* Views & Percentage */}
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        <span className="block text-lg font-bold text-gray-800 leading-none">
+                          {item.count}
+                        </span>
+                        <span className="text-[10px] text-gray-500">
+                          {getShare(item.count, totalGeneral)}%
+                        </span>
+                      </div>
+                      
+                      {/* Mini Bar */}
+                      <div className="w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${getShare(item.count, totalGeneral)}%` }}
+                          transition={{ delay: index * 0.05 + 0.2, duration: 0.6 }}
+                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))
             )}
           </div>
         </div>
 
         {/* ==========================
-            RIGHT: PRODUCTS
+            RIGHT: TOP PRODUCTS
            ========================== */}
-        <div className="flex flex-col gap-4">
-          <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-            <div className="flex items-center gap-2">
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                <ShoppingBag className="w-5 h-5" />
+        <div className="space-y-4">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b-2 border-purple-100">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg shadow-purple-200/50">
+                <ShoppingBag className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h4 className="font-bold text-gray-800">{t("Top Products")}</h4>
+                <h4 className="font-bold text-gray-800 text-lg">{t("Top Products")}</h4>
                 <p className="text-xs text-gray-500">
                   {totalProducts} {t("product views")}
                 </p>
@@ -170,77 +150,96 @@ const Visits = ({ visit = [] }: VisitsProps) => {
             </div>
           </div>
 
-          <div className="flex flex-col gap-3">
+          {/* Products List */}
+          <div className="space-y-3">
             {productPages.length === 0 ? (
-              <p className="text-sm text-gray-400 italic py-4 text-center">
-                {t("No products visited")}
-              </p>
-            ) : (
-              productPages.map((item, index) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between p-2 rounded-xl border border-transparent hover:border-purple-100 hover:bg-purple-50/30 transition-all duration-200"
-                >
-                  <div className="flex items-center gap-4 overflow-hidden">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 overflow-hidden flex-shrink-0">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-300">
-                            <ImageOff size={18} />
-                          </div>
-                        )}
-                      </div>
-                      {/* Rank Badge for Top 3 */}
-                      {index < 3 && (
-                        <div
-                          className={`absolute -top-2 -left-2 w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center text-white border-2 border-white ${
-                            index === 0
-                              ? "bg-yellow-500"
-                              : index === 1
-                              ? "bg-gray-400"
-                              : "bg-orange-400"
-                          }`}
-                        >
-                          {index + 1}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col min-w-0">
-                      <span
-                        className="text-sm font-semibold text-gray-800 truncate block max-w-[180px]"
-                        title={item.name}
-                      >
-                        {item.name}
-                      </span>
-                      {/* Mini Progress Bar */}
-                      <div className="w-24 h-1.5 bg-gray-100 rounded-full mt-1.5 overflow-hidden">
-                        <div
-                          className="h-full bg-purple-500 rounded-full"
-                          style={{
-                            width: `${getPercent(item.count, maxProductVal)}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="block text-lg font-bold text-gray-800 leading-none">
-                      {item.count}
-                    </span>
-                    <span className="text-[10px] uppercase font-medium text-gray-400">
-                      views
-                    </span>
-                  </div>
+              <div className="py-12 text-center">
+                <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                  <ShoppingBag className="w-8 h-8 text-gray-400" />
                 </div>
-              ))
+                <p className="text-sm text-gray-400 italic">{t("No products visited")}</p>
+              </div>
+            ) : (
+              productPages.map((item, index) => {
+                const medal = getMedalColor(index);
+                const MedalIcon = medal.icon;
+
+                return (
+                  <motion.div
+                    key={item.name}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.05 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    className="group relative"
+                  >
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-white to-purple-50/30 border border-purple-100/50 hover:border-purple-200 hover:shadow-lg hover:shadow-purple-100/50 transition-all duration-300">
+                      
+                      {/* Product Info */}
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        {/* Product Image */}
+                        <div className="relative flex-shrink-0">
+                          <div className="w-14 h-14 rounded-xl bg-gray-100 border-2 border-gray-200 overflow-hidden">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                <ImageOff className="w-6 h-6" />
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Medal Badge for Top 3 */}
+                          {index < 3 && MedalIcon && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              transition={{ delay: index * 0.05 + 0.3, type: "spring" }}
+                              className={`absolute -top-2 -left-2 w-6 h-6 rounded-full ${medal.bg} flex items-center justify-center border-2 border-white shadow-lg`}
+                            >
+                              <MedalIcon className="w-3 h-3 text-white" />
+                            </motion.div>
+                          )}
+                        </div>
+
+                        {/* Product Details */}
+                        <div className="flex-1 min-w-0">
+                          <span
+                            className="block text-sm font-semibold text-gray-800 truncate"
+                            title={item.name}
+                          >
+                            {item.name}
+                          </span>
+                          
+                          {/* Progress Bar */}
+                          <div className="mt-2 w-full max-w-[200px] h-2 bg-gray-100 rounded-full overflow-hidden">
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${getPercent(item.count, maxProductVal)}%` }}
+                              transition={{ delay: index * 0.05 + 0.2, duration: 0.8 }}
+                              className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Views Count */}
+                      <div className="text-right ml-4">
+                        <span className="block text-xl font-bold text-gray-800 leading-none">
+                          {item.count}
+                        </span>
+                        <span className="text-[10px] uppercase font-medium text-gray-400">
+                          {t("views")}
+                        </span>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })
             )}
           </div>
         </div>
